@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC
+    "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="jp.co.ntt.ojt.domain.repository.user.UserRepository">
+
+	<resultMap type="User" id="userResultMap">
+		<id property="userId" column="userId"/>
+		<result property="username" column="username"/>
+		<result property="birthday" column="birthday"/>
+		<result property="address" column="address"/>
+		<result property="telephone" column="telephone"/>
+		<result property="password" column="password"/>
+		<result property="status" column="status"/>
+		<result property="lastUpdateTime" column="lastUpdateTime"/>
+		<collection property="roles" ofType="Role">
+			<result property="roleName" column="roleName"/>
+		</collection>
+	</resultMap>
+	
+	<sql id="userColumn">
+		u.userid as userId, 
+        u.username as username, 
+        u.birthday as birthday,
+        u.address as address,
+        u.phonenumber as telephone,
+        u.u_password as password,
+        u.state as status,
+        u.lastupdatetime as lastUpdateTime,
+        r.rolename as roleName
+	</sql>
+	
+	<!-- 主キーによるユーザ検索 -->
+	<select id="findOneByUserId" resultMap="userResultMap">
+        SELECT
+          	<include refid="userColumn"/>
+        FROM
+            t_user u LEFT JOIN t_role r ON u.userid = r.userid
+        WHERE
+            u.userid = #{userId}
+            <![CDATA[ and  u.state <> 'RMVD']]>
+	</select>
+	
+	<sql id="searchInfo">
+		<if test="user.userId != null and user.userId != ''">
+   			AND u.userid = #{user.userId}
+   		</if>
+   		<if test="user.username != null and user.username != ''">
+   			AND u.username = #{user.username}
+   		</if>
+   		<if test="user.birthday != null">
+   			AND u.birthday = #{user.birthday}
+   		</if>
+   		<if test="user.address != null and user.address != ''">
+   			AND u.address LIKE CONCAT('%',#{user.address},'%')
+   		</if>
+   		<if test="user.telephone != null and user.telephone != ''">
+   			AND u.phonenumber = #{user.telephone}
+   		</if>
+   		<if test="user.roleNames != null and user.roleNames[0] != null and user.roleNames[0] != ''">
+   			AND r.rolename = #{user.roleNames[0]}
+   		</if>
+   		<if test="user.status != null and user.status != ''">
+   			AND u.state = #{user.status}
+   		</if>
+   		<if test="user.status == null or user.status == '' or user.status != @jp.co.ntt.ojt.domain.model.User@RMVD">
+   			AND u.state != '${@jp.co.ntt.ojt.domain.model.User@RMVD}'
+   		</if>
+	</sql>
+	
+	<!-- ユーザIDや名前を条件にしたユーザIDのページ検索 -->
+	<sql id="searchIdByInfo">
+		SELECT
+          	u.userid
+        FROM
+            t_user u LEFT JOIN t_role r ON u.userid = r.userid
+        <where>
+	        <include refid="searchInfo"/>
+        </where>
+        GROUP BY
+        	u.userid
+        ORDER BY
+        	u.userid
+        LIMIT
+    		#{pageable.pageSize}
+    	OFFSET
+    		#{pageable.offset}
+	</sql>
+	
+	<!-- ユーザのページ検索 -->
+	<select id="findPageByInfo" resultMap="userResultMap">
+        SELECT
+          	<include refid="userColumn"/>
+        FROM
+            t_user u LEFT JOIN t_role r ON u.userid = r.userid
+    	<where>
+    		u.userid in (<include refid="searchIdByInfo"/>)
+    	</where>
+    	ORDER BY
+    		u.userid
+	</select>
+	
+	<!-- ユーザIDや名前を条件にしたユーザ数の取得 -->
+	<select id="countByInfo" resultType="long">
+		<![CDATA[
+        SELECT
+          	count(DISTINCT u.userid)
+        FROM
+            t_user u LEFT JOIN t_role r ON u.userid = r.userid
+    	]]>
+    	<where>
+    		<include refid="searchInfo"/>
+    	</where>
+	</select>
+	
+	<!-- ユーザIDを条件にしたユーザ論理削除 -->
+	<update id="delete">
+	<![CDATA[
+		UPDATE 
+			t_user 
+		SET 
+			state = '${@jp.co.ntt.ojt.domain.model.User@RMVD}',
+			last_update_time = now()::timestamp(0)without time zone
+		WHERE
+			userid = #{user.userId}
+			
+	]]>
+	</update>
+	
+	<!-- ユーザIDを条件にしたユーザの更新 -->
+	<update id="update">
+		UPDATE 
+			t_user 
+		SET 
+			username = #{user.username},
+			birthday = #{user.birthday},
+			address = #{user.address},
+			phonenumber = #{user.telephone},
+			<if test="user.password != null and user.password != ''">
+				u_password = #{user.password},
+			</if>
+			lastupdatetime = now()::timestamp(0)without time zone
+		WHERE
+			userid = #{user.userId}
+			<!-- AND lastupdatetime = #{user.lastUpdateTime} -->
+	</update>
+	
+	<!-- ユーザの登録. -->
+	<insert id="insert">
+		INSERT INTO t_user (
+			userid,
+			username,
+			birthday,
+			address,
+			phonenumber,
+			u_password,
+			state,
+			lastupdatetime
+		) VALUES (
+			#{user.userId},
+			#{user.username},
+			#{user.birthday},
+			#{user.address},
+			#{user.telephone},
+			#{user.password},
+			'${@jp.co.ntt.ojt.domain.model.User@INIT}',
+			now()::timestamp(0)without time zone
+		);
+	</insert>
+	
+	<!-- ユーザパスワードと状態の変更. -->
+	<update id="updatePasswordAndStatus">
+		UPDATE 
+			t_user 
+		SET 
+			u_password = #{user.password},
+			state = '${@jp.co.ntt.ojt.domain.model.User@ACTV}',
+			lastupdatetime = now()::timestamp(0)without time zone
+		WHERE
+			userid = #{user.userId}
+			<!-- AND lastupdatetime = #{user.lastUpdateTime} -->
+	</update>
+	
+	<!-- 最大のユーザーIDの取得 -->
+	<select id="findAllUserId" resultType="Integer">
+		SELECT
+			to_number(userid, '9999')
+		FROM
+			t_user
+	</select>
+</mapper>

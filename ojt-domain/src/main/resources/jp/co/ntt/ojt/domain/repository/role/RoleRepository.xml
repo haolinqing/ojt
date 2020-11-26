@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC
+    "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="jp.co.ntt.ojt.domain.repository.role.RoleRepository">
+
+	<resultMap type="Role" id="roleResultMap">
+		<result property="roleName" column="roleName"/>
+		<association property="user">
+			<result property="userId" column="userId"/>
+		</association>
+	</resultMap>
+	
+	<!-- ユーザIDを条件にしたロール検索 -->
+	<select id="findByUserId" resultMap="roleResultMap">
+		<![CDATA[
+        SELECT
+          	r.userid as userId,
+          	r.rolename as roleName
+        FROM
+            t_role r LEFT JOIN t_user u ON r.userid = u.userid
+        WHERE
+            r.userid = #{userId}
+    	]]>
+	</select>
+	
+	<!-- ロールの作成 -->
+	<insert id="insert">
+		<![CDATA[
+			INSERT INTO t_role (
+				userid,
+				rolename
+			) VALUES (
+				#{userId},
+				#{roleName}
+			);
+		]]>
+	</insert>
+	
+	<!-- ユーザIDと役割名を条件にしたロールの削除 -->
+	<delete id="delete">
+		<![CDATA[
+			DELETE FROM
+				t_role
+			WHERE
+				userid = #{userId}
+				AND rolename = #{roleName}
+		]]>
+	</delete>
+</mapper>

@@ -1,0 +1,195 @@
+body {
+  font:14px/1.5 Lato, "Helvetica Neue", Helvetica, Arial, sans-serif;
+  color:#777;
+  font-weight:300;
+  width: 1200px;
+  margin: 0 auto;
+}
+
+#main_table {
+	width: 100%;
+	border: 2px solid #5AECEC;
+}
+
+.main_table_td {
+	width: 100%;
+	border-bottom: 2px solid #5AECEC;
+}
+
+.body {
+  height: 510px;
+  text-align: center;
+}
+
+.header {
+  height: 30px;
+  line-height: 15px;
+  background: #e5eCf9;
+}
+
+#head_table {
+	width: 100%;
+}
+
+#td_head_left {
+	padding:0px 10px;
+	text-align: left;
+}
+
+#td_head_right {
+	padding:0px 10px;
+	text-align: right;
+}
+
+.footer {
+	text-align: right; 
+	line-height: 20px; 
+	background: #e5eCf9; 
+	padding-right: 15px;
+}
+
+#logout {
+	width: 200px;
+}
+
+a {
+  color:#39c;
+  font-weight:400;
+  text-decoration:none;
+}
+
+hr {
+  border:0;
+  background:#e5e5e5;
+  height:1px;
+  margin:0 0 20px;
+}
+
+table {
+	width: 90%;
+	border: 0px;
+}
+
+th, td {
+  padding:10px 15px;
+  text-align: left;
+}
+
+th {
+	text-align:center;
+}
+
+#menu_table{
+	margin-left: 40px;
+}
+
+.menu_left_td {
+	width: 50%;
+	text-align: right;
+}
+
+.menu_right_td {
+	width: 50%;
+	text-align: left;
+}
+
+.td_left {
+	text-align:right;
+	width: 45%;
+}
+
+.td_right {
+	text-align:left;
+	width: 55%;
+}
+
+.td_center {
+	text-align:center;
+}
+
+li {
+	display: inline;
+}
+
+.pagination li>a {
+	text-align:center;
+	margin-left: 10px;
+}
+
+.alert-error {
+    background-color: #c60f13;
+    border-color: #970b0e;
+    color: white;
+}
+
+input  {
+	width: 200px;
+}
+
+select {
+	width: 200px;
+}
+
+input[type = "submit"] {
+	text-align: center;
+	height: 30px;
+	width: 80px;
+}
+
+input[type = "radio"] {
+	text-align: center;
+	height: 30px;
+	width: auto;
+}
+
+input[type = "checkbox"] {
+	text-align: left;
+	height: 10px;
+	width: auto;
+}
+
+.read_only_input {
+	border: none;
+}
+
+button {
+	text-align: center;
+	height: 30px;
+	width: 150px;
+}
+
+.submit_button {
+	text-align: center;
+	height: 30px;
+	width: 70px;
+}
+
+.error {
+	color: red;
+}
+
+#result_table_div {
+	height:350px;
+}
+
+#result_table {
+	margin: auto;
+	border-collapse: collapse;
+	padding: 0px;
+}
+
+.result_table_td {
+	text-align: center;
+	border: 1px solid black;
+	width: auto;
+}
+
+.result_table_th_tr {
+	background: #87CEEB;
+	text-align: center;
+	border: 1px solid black;
+}
+
+.result_table_td_tr {
+	height: 63px;
+}

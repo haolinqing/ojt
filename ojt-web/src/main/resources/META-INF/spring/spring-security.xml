@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:sec="http://www.springframework.org/schema/security"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xsi:schemaLocation="http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <sec:http pattern="/resources/**" security="none"/>
+    <sec:http auto-config="true" use-expressions="true">
+    
+    	<!-- ログイン設定 -->
+        <sec:form-login 
+        	login-page="/login?form"
+        	default-target-url="/top"
+        	always-use-default-target="true"
+        	authentication-failure-url="/login?form&amp;error=true"
+        	username-parameter="userId"
+        	password-parameter="password"
+        	login-processing-url="/login"
+        />
+        
+        <!-- ログアウト設定 -->
+        <sec:logout 
+        	logout-url="/logout"
+        	logout-success-url="/login?form"
+        	delete-cookies="JSESSIONID"
+        />
+        <sec:access-denied-handler ref="accessDeniedHandler"/>
+        <sec:custom-filter ref="userIdMDCPutFilter" after="ANONYMOUS_FILTER"/>
+        <sec:session-management />
+        
+        <!-- アクセス制限 -->
+        
+        <sec:intercept-url pattern="/user/delete" access="hasRole('ROLE_ADMN')"/>
+        <sec:intercept-url pattern="/user/update" access="hasRole('ROLE_ADMN')"/>
+        <sec:intercept-url pattern="/user/register" access="hasRole('ROLE_ADMN')"/>
+        <sec:intercept-url pattern="/password/**" access="hasRole('ROLE_ADMN')"/>
+        <sec:intercept-url pattern="/login*" access="permitAll"/>
+        <sec:intercept-url pattern="/**" access="isAuthenticated()"/>
+		        
+    </sec:http>
+    
+    <sec:global-method-security pre-post-annotations="enabled"/>
+
+    <sec:authentication-manager>
+    	<!-- 予約ユーザ用の認証サービスを設定 -->
+    	<sec:authentication-provider ref="authenticationProvider"/>
+    </sec:authentication-manager>
+    
+    <bean id="authenticationProvider" class="org.springframework.security.authentication.dao.DaoAuthenticationProvider">
+    	<property name="userDetailsService" ref="loginUserDetailsService"></property>
+    	<property name="hideUserNotFoundExceptions" value="false"></property>
+    	<property name="passwordEncoder" ref="passwordEncoder"></property>
+    </bean>
+    
+    <bean id="loginUserDetailsService" class="jp.co.ntt.ojt.domain.service.user.LoginUserDetailsService"/>
+    
+ 
+    <!-- CSRF Protection -->
+    <bean id="accessDeniedHandler"
+        class="org.springframework.security.web.access.DelegatingAccessDeniedHandler">
+        <constructor-arg index="0">
+            <map>
+                <entry
+                    key="org.springframework.security.web.csrf.InvalidCsrfTokenException">
+                    <bean
+                        class="org.springframework.security.web.access.AccessDeniedHandlerImpl">
+                        <property name="errorPage"
+                            value="/WEB-INF/views/common/error/invalidCsrfTokenError.jsp" />
+                    </bean>
+                </entry>
+                <entry
+                    key="org.springframework.security.web.csrf.MissingCsrfTokenException">
+                    <bean
+                        class="org.springframework.security.web.access.AccessDeniedHandlerImpl">
+                        <property name="errorPage"
+                            value="/WEB-INF/views/common/error/missingCsrfTokenError.jsp" />
+                    </bean>
+                </entry>
+            </map>
+        </constructor-arg>
+        <constructor-arg index="1">
+            <bean
+                class="org.springframework.security.web.access.AccessDeniedHandlerImpl">
+                <property name="errorPage"
+                    value="/WEB-INF/views/common/error/accessDeniedError.jsp" />
+            </bean>
+        </constructor-arg>
+    </bean>
+
+    <!-- Put UserID into MDC -->
+    <bean id="userIdMDCPutFilter" class="org.terasoluna.gfw.security.web.logging.UserIdMDCPutFilter">
+    </bean>
+
+</beans>
